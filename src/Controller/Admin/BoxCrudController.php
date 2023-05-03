@@ -19,7 +19,6 @@ class BoxCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
-            IdField::new('id'),
             TextField::new('street'),
             IntegerField::new('zipcode'),
             TextField::new('city'),

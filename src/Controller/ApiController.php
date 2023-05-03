@@ -4,8 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Book;
 use App\Entity\Borrow;
+use App\Entity\Box;
 use App\Entity\User;
 use App\Repository\BookRepository;
+use App\Repository\BoxRepository;
 use App\Repository\UserRepository;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -18,10 +20,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 class ApiController extends AbstractController
 {
-    #[Route('/api', name: 'app_api_index', methods: "GET")]
-    public function index(BookRepository $bookRepository, ): Response
+    #[Route('/api/book/{id_book}', name: 'app_api_id_book', methods: "GET")]
+    public function index(BookRepository $bookRepository, $id_book): Response
     {
-       return $this->json($bookRepository->findAll(), 200, [], ['groups' => 'book:read']);
+        $book = $this->getDoctrine()
+        ->getRepository(Book::class)
+        ->findOneBy(["id" => $id_book]);
+       return $this->json($book, 200, [], ['groups' => 'book:read']);
     }
 
     #[Route('/api', name: 'app_api_store', methods: "POST")]
@@ -37,6 +42,21 @@ class ApiController extends AbstractController
         return $this->json($book, 201, []);
     }
 
+    #[Route('/api/box/{id}', name: 'app_api_box', methods: "GET")]
+    public function apibox(BoxRepository $boxRepository, $id): Response
+    {
+        $id = $this->getDoctrine()
+            ->getRepository(Box::class)
+            ->findOneBy(["id" => $id]);
+            if (!$id) {
+                return $this->json(["error" => " Utilisateur inexistant"], 201);
+                }
+
+       return $this->json($id, 200, [], ['groups' => 'book:read']);
+
+       
+    }
+
     #[Route('/api/v1/user/login', name: 'app_api', methods: "POST")]
     public function addBook(Request $request, SerializerInterface $serializer): Response {
         $uuid = $request->get("uuid");
@@ -45,7 +65,7 @@ class ApiController extends AbstractController
                 ->getRepository(User::class)
                 ->findOneBy(["uuid" => $uuid]);
             if (!$users) {
-                return $this->json(["error" => " Utilisateur inexistant"], 200);
+                return $this->json(["error" => " Utilisateur inexistant"], 201);
             }
 
             $json = $serializer->serialize($users, 'json', ["groups" => "book:read"]);
@@ -77,7 +97,7 @@ class ApiController extends AbstractController
 
             $em->persist($borrow);
             $em->flush();
-            return $this->json(["Message" => "Book borrowed!"]);
+            return $this->json(["Message" => "Book borrowed!"], 200);
         }
 
         
@@ -86,6 +106,6 @@ class ApiController extends AbstractController
 
         $em->persist($borrow);
         $em->flush();
-        return $this->json(["Book est rendu"]);
+        return $this->json(["Book est rendu"], 201);
     }
 }
