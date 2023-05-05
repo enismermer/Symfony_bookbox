@@ -79,12 +79,11 @@ class ApiController extends AbstractController
         }
     }
 
-    #[Route('/api/v1/books/{id_book}/borrowBook', name: 'post_books_borrow', methods: ["POST"])]
-    public function borrowBook($id_book, SerializerInterface $serializer, Request $request, BookRepository $bookRepository, UserRepository $userRepository, EntityManagerInterface $em): Response
+    #[Route('/api/v1/books/{id_book}/borrowBook/{id_user}', name: 'post_books_borrow', methods: ["GET"])]
+    public function borrowBook($id_book, $id_user, SerializerInterface $serializer, Request $request, BookRepository $bookRepository, UserRepository $userRepository, EntityManagerInterface $em): Response
     {
         $book   = $bookRepository->find($id_book);
-        $userId = $request->get("id");
-        $user   = $userRepository->find($userId);
+        $user   = $userRepository->find($id_user);
         
         $borrow = new Borrow();
 
@@ -106,6 +105,6 @@ class ApiController extends AbstractController
 
         $em->persist($borrow);
         $em->flush();
-        return $this->json(["Book est rendu"], 201);
+        return $this->json(["Message" => "Book est rendu"], 201);
     }
 }
